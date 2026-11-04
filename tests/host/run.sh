@@ -1,6 +1,8 @@
 #!/bin/bash
 # Builds and runs the DuckSleep host tests with AddressSanitizer and UBSan:
 #  - SleepPolicy (pure decisions) and SleepStatusMessage (payload builder)
+#  - the public header, compiled with the defaults (inline no-ops) and with
+#    sleep enabled (declarations only)
 #  - every out-of-range define must fail to compile
 #
 # Needs ArduinoJson 7 sources for the payload test. Set ARDUINOJSON_SRC to its
@@ -33,6 +35,16 @@ echo "== SleepPolicy"
 echo "== SleepStatusMessage"
 "$cxx" "${flags[@]}" "$here/status_test.cpp" -o "$out/status_test"
 "$out/status_test"
+
+echo "== DuckSleep.h with the defaults"
+"$cxx" "${flags[@]}" "$here/api_test.cpp" -o "$out/api_test"
+"$out/api_test"
+
+echo "== DuckSleep.h with sleep and survival enabled (compile only)"
+"$cxx" "${flags[@]}" -fsyntax-only -DDUCK_SLEEP_ENABLED=1 -DDUCK_SLEEP_START_MIN_UTC=1320 \
+    -DDUCK_SLEEP_WAKE_MIN_UTC=360 -DDUCK_SLEEP_ROLE=0 -DDUCK_SURVIVAL_ENABLED=1 \
+    -DDUCK_BUILD_EPOCH=1793750400 "$here/api_test.cpp"
+echo "PASS DuckSleep.h (enabled) compiles"
 
 echo "== Out-of-range defines must not compile"
 bad=(
