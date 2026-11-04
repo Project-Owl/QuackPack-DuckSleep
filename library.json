@@ -1,0 +1,54 @@
+{
+  "name": "QuackPack-DuckSleep",
+  "version": "0.1.0",
+  "description": "Opt-in scheduled deep sleep and battery survival hold for ClusterDuck Protocol MamaDucks. Compiles away unless enabled.",
+  "keywords": [
+    "iot",
+    "lora",
+    "mesh",
+    "clusterduck",
+    "quackpack",
+    "owl",
+    "esp32",
+    "deep-sleep",
+    "power",
+    "battery"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Project-Owl/QuackPack-DuckSleep.git"
+  },
+  "authors": [
+    {
+      "name": "OWL Integrations",
+      "url": "https://www.owlintegrations.com",
+      "email": "support@owlintegrations.com",
+      "maintainer": true
+    }
+  ],
+  "license": "Apache-2.0",
+  "homepage": "https://clusterduckprotocol.org",
+  "frameworks": "arduino",
+  "platforms": "espressif32",
+  "dependencies": [
+    {
+      "owner": "bblanchon",
+      "name": "ArduinoJson",
+      "version": "^7.0.3"
+    }
+  ],
+  "build": {
+    "srcDir": "src"
+  },
+  "export": {
+    "include": [
+      "src",
+      "examples",
+      "tests",
+      "library.json",
+      "library.properties",
+      "LICENSE",
+      "README.md"
+    ]
+  }
+}
