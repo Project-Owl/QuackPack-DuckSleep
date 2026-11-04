@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  host-tests:
+    name: Host tests (policy, payload, defines)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check out ArduinoJson 7.4.3
+        uses: actions/checkout@v4
+        with:
+          repository: bblanchon/ArduinoJson
+          ref: v7.4.3
+          path: deps/ArduinoJson
+      - name: Run host tests
+        env:
+          ARDUINOJSON_SRC: ${{ github.workspace }}/deps/ArduinoJson/src
+          CXX: clang++
+        run: bash tests/host/run.sh
+
+  example:
+    name: Example (${{ matrix.env }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        env: [example_off, example_on]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.platformio/.cache
+            ~/.platformio/packages
+            ~/.platformio/platforms
+          key: pio-${{ runner.os }}-${{ hashFiles('platformio.ini', 'library.json') }}
+      - name: Install PlatformIO
+        run: pip install --upgrade platformio
+      - name: Build
+        run: pio run -e ${{ matrix.env }}
