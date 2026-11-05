@@ -365,37 +365,7 @@ Without `ARDUINOJSON_SRC` it uses `.pio/libdeps/*/ArduinoJson/src` from a previo
 
 - **ClusterDuck Protocol**: no CDP dependency; the sketch wires CDP in through the hooks. The `txIdle`, `prepareRadioForSleep` and `timeValid` hooks map to calls new in CDP `release/5.5`, and the Quick start sketch was compiled against it.
 - **Platform**: ESP32 only; the example and CI use espressif32 7.0.1 with board `ttgo-t-beam`
-- **Language**: C++17 or later
-- **ArduinoJson**: 7 (`^7.0.3`; the host tests run against 7.4.3)
-- **XPowersLib**: 0.3.x, for the AXP2101 helper only
-- **Development environment**: PlatformIO only (the Arduino IDE is not used or tested)
 
-### Caveats
-
-- **Wake storm.** A mesh-wide window wakes many ducks together. The jitter spreads wakes over `DUCK_SLEEP_WAKE_JITTER_S`; stagger the first telemetry after boot in the sketch too.
-- **Slow-clock drift.** Long ESP32 deep sleeps woke up to 18.5 minutes early in an 8.5-hour sleep in the Phoenix soak. Chunking and the silent re-sleep make an early wake cost a few hundred milliseconds instead of a boot and a rejoin.
-- **Unauthenticated time.** CDP `cmd_time` is not authenticated. A wrong clock can start or skip a sleep. `DUCK_BUILD_EPOCH`, the window cap and failing awake limit the damage; they do not prevent it.
-- **Time zones.** The window is in UTC and does not follow daylight saving.
-- **Every wake is a reboot** for CDP: routes, counters, health `boot` and `uptimeS` reset, and the reset reason is 8 (deep sleep). Dashboards should treat scheduled windows as expected, not as outages.
-- **PMU failures.** If the PMU does not answer, rails are not cut and the sleep saves less; the status says `pmu_unavailable`.
-- **Not covered:** the AXP2101 VBUS-sag latch-off, which needs a power cycle.
-
-## Contributing
-
-Open an issue or a pull request on [GitHub](https://github.com/Project-Owl/QuackPack-DuckSleep). Run the host tests and both example builds first (see [Tests and CI](#tests-and-ci)); CI runs the same checks on every pull request.
-
-### Layout
-
-```
-src/DuckSleep.h            public API and Hooks (no Arduino headers)
-src/DuckSleepConfig.h      defines, range checks, Config from defines
-src/SleepPolicy.h          pure policy: decide(), decideBoot()
-src/SleepStatusMessage.h   sleepstatus payload builder (ArduinoJson)
-src/DuckSleep.cpp          ESP32 adapter (compiled only when enabled)
-src/DuckSleepAxp2101.h     optional AXP2101 helper (needs XPowersLib)
-examples/BasicSleep        T-Beam example without CDP
-tests/host                 host tests
-```
 
 ## Changelog
 
@@ -407,26 +377,3 @@ tests/host                 host tests
 
 This project is licensed under the Apache 2.0 License - see the [LICENSE](LICENSE) file for details.
 
-## Acknowledgments
-
-- Built on the [ClusterDuck Protocol](https://github.com/ClusterDuck-Protocol/ClusterDuck-Protocol)
-- Created by [OWL Integrations](https://www.owlintegrations.com/)
-- The fallback timings and the slow-clock drift figures come from the Phoenix firmware and its soak test.
-
-## Resources
-
-- [OWL Integrations](https://www.owlintegrations.com/)
-- [OWL DMS](https://www.owlintegrations.com/) - Device Management System for mesh networking
-- [ClusterDuck Protocol](https://github.com/ClusterDuck-Protocol/ClusterDuck-Protocol)
-- [Discord Community](https://discord.gg/clusterduck)
-- **DMS Support**: support@owlintegrations.com
-
-## Support
-
-For questions and support:
-- Join the [ClusterDuck Protocol Discord](https://discord.gg/clusterduck)
-- Open an [Issue](https://github.com/Project-Owl/QuackPack-DuckSleep/issues)
-
-## Authors
-
-- **Timo Wielink** - *Initial work* - [@TimoWielink](https://github.com/TimoWielink)
