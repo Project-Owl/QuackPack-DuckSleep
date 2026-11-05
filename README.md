@@ -19,7 +19,7 @@ It also:
 - reports each sleep on the mesh with a `sleeping` and an `awake` status (the `sleepstatus` payload);
 - has an optional AXP2101 helper for T-Beam v1.2 class boards.
 
-It is **off by default**. With both build switches at 0, every call compiles to an empty inline function and the firmware is byte-for-byte the same size as without the library.
+It is **off by default**. With both build switches at 0, every DuckSleep call compiles to an inline no-op and the firmware is byte-for-byte the same size as without the library.
 
 The library does not include any CDP or DMS header. Everything CDP-specific (transmit queue, radio, sending, clock check) comes in through a `Hooks` struct of callbacks set by the sketch.
 
@@ -110,9 +110,9 @@ duckSleep::addPowerGate([](bool on) {
 - [PlatformIO](https://platformio.org/)
 - An ESP32 with the Arduino framework
 - C++17 or later (CDP projects build with `gnu++2a`)
-- ArduinoJson 7 (`bblanchon/ArduinoJson@^7.0.3`, a dependency in `library.json`; CDP already uses it)
+- ArduinoJson 7 (installed with the library)
 - `lewisxhe/XPowersLib` 0.3.x, only if the sketch uses `DuckSleepAxp2101.h`. It is not a library dependency.
-- For the `txIdle`, `prepareRadioForSleep` and `timeValid` hooks: CDP `release/5.5` (see [Compatibility](#compatibility))
+- To wire the `txIdle`, `prepareRadioForSleep` and `timeValid` hooks to `Duck::txIdle()`, `Duck::prepareForSleep()` and `Duck::hasValidTime()`: CDP `release/5.5` (see [Compatibility](#compatibility))
 
 ### Pinning it in a project (DMS, CDP or your own)
 
@@ -139,7 +139,7 @@ The defines must reach the library sources, so set them in `build_flags` or `PLA
 
 The library depends only on `bblanchon/ArduinoJson` (`^7.0.3`), which PlatformIO installs automatically. CDP already uses it.
 
-**It has no ClusterDuck-Protocol dependency on purpose.** Everything CDP-specific comes in through hooks, so the library can be pinned next to any CDP version, and no URL dependency pulls in a second copy of CDP. Each project pins CDP itself.
+**It has no ClusterDuck-Protocol dependency on purpose.** Everything CDP-specific comes in through hooks, so the library can be pinned next to the CDP version your project uses, and no URL dependency pulls in a second copy of CDP. Each project pins CDP itself.
 
 ## Quick start
 
@@ -225,7 +225,7 @@ bool addPowerGate(void (*gate)(bool on));
 
 std::uint32_t deviceIdHash(const void* data, std::size_t length);
 const char* wakeCauseName(WakeCause cause);
-constexpr bool kBuiltIn;
+constexpr bool kBuiltIn = DUCK_SLEEP_ACTIVE != 0;
 ```
 
 | Call | When | What |
@@ -363,7 +363,7 @@ Without `ARDUINOJSON_SRC` it uses `.pio/libdeps/*/ArduinoJson/src` from a previo
 
 ## Compatibility
 
-- **ClusterDuck Protocol**: any version, through the hooks; there is no CDP dependency. The `txIdle`, `prepareRadioForSleep` and `timeValid` hooks map to calls new in CDP `release/5.5`, and the Quick start sketch was compiled against it.
+- **ClusterDuck Protocol**: no CDP dependency; the sketch wires CDP in through the hooks. The `txIdle`, `prepareRadioForSleep` and `timeValid` hooks map to calls new in CDP `release/5.5`, and the Quick start sketch was compiled against it.
 - **Platform**: ESP32 only; the example and CI use espressif32 7.0.1 with board `ttgo-t-beam`
 - **Language**: C++17 or later
 - **ArduinoJson**: 7 (`^7.0.3`; the host tests run against 7.4.3)
